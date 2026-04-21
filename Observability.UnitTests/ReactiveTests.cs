@@ -26,7 +26,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithAddExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => unchecked(target.Value + offset));
 
         // act
@@ -54,7 +54,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithAddCheckedExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => checked(target.Value + offset));
 
         // act
@@ -74,7 +74,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithAddCheckedExpressions_WhenOverflow(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => checked(target.Value + offset));
 
         // act
@@ -106,7 +106,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithSubtractExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => unchecked(target.Value - offset));
 
         // act
@@ -134,7 +134,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithSubtractCheckedExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => checked(target.Value - offset));
 
         // act
@@ -157,7 +157,7 @@ public static class ReactiveTests
     )
     {
         // arrange
-        var target = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => checked(target.Value - offset));
 
         // act
@@ -189,7 +189,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithMultiplyExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 1 };
+        var target = new ReactiveProperty<int>(1);
         var sut = Reactive.Observe(() => unchecked(target.Value * offset));
 
         // act
@@ -215,7 +215,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithMultiplyCheckedExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 1 };
+        var target = new ReactiveProperty<int>(1);
         var sut = Reactive.Observe(() => checked(target.Value * offset));
 
         // act
@@ -240,7 +240,7 @@ public static class ReactiveTests
     )
     {
         // arrange
-        var target = new TestReactive<int> { Value = 1 };
+        var target = new ReactiveProperty<int>(1);
         var sut = Reactive.Observe(() => checked(target.Value * offset));
 
         // act
@@ -272,7 +272,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithDivideExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => target.Value / offset);
 
         // act
@@ -302,7 +302,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithModuloExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => target.Value % offset);
 
         // act
@@ -332,7 +332,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithPowerExpressions(int offset, int value)
     {
         // arrange
-        var target = new TestReactive<int> { Value = 1 };
+        var target = new ReactiveProperty<int>(1);
         var sut = Reactive.Observe(PowExpression(() => target.Value, () => offset));
 
         // act
@@ -350,8 +350,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithAndExpressions()
     {
         // arrange
-        var a = new TestReactive<bool> { Value = false };
-        var b = new TestReactive<bool> { Value = false };
+        var a = new ReactiveProperty<bool>(false);
+        var b = new ReactiveProperty<bool>(false);
         var sut = Reactive.Observe(() => a.Value & b.Value);
 
         // act
@@ -373,8 +373,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithOrExpressions()
     {
         // arrange
-        var a = new TestReactive<bool> { Value = false };
-        var b = new TestReactive<bool> { Value = false };
+        var a = new ReactiveProperty<bool>(false);
+        var b = new ReactiveProperty<bool>(false);
         var sut = Reactive.Observe(() => a.Value | b.Value);
 
         // act
@@ -396,8 +396,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithXOrExpressions()
     {
         // arrange
-        var a = new TestReactive<bool> { Value = false };
-        var b = new TestReactive<bool> { Value = false };
+        var a = new ReactiveProperty<bool>(false);
+        var b = new ReactiveProperty<bool>(false);
         var sut = Reactive.Observe(() => a.Value ^ b.Value);
 
         // act
@@ -419,8 +419,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithLessThanExpressions()
     {
         // arrange
-        var a = new TestReactive<int> { Value = 0 };
-        var b = new TestReactive<int> { Value = 0 };
+        var a = new ReactiveProperty<int>(0);
+        var b = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => a.Value < b.Value);
 
         // act
@@ -442,8 +442,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithLessThanOrEqualExpressions()
     {
         // arrange
-        var a = new TestReactive<int> { Value = 0 };
-        var b = new TestReactive<int> { Value = 0 };
+        var a = new ReactiveProperty<int>(0);
+        var b = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => a.Value <= b.Value);
 
         // act
@@ -465,8 +465,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithGreaterThanExpressions()
     {
         // arrange
-        var a = new TestReactive<int> { Value = 0 };
-        var b = new TestReactive<int> { Value = 0 };
+        var a = new ReactiveProperty<int>(0);
+        var b = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => a.Value > b.Value);
 
         // act
@@ -488,8 +488,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithGreaterThanOrEqualExpressions()
     {
         // arrange
-        var a = new TestReactive<int> { Value = 0 };
-        var b = new TestReactive<int> { Value = 0 };
+        var a = new ReactiveProperty<int>(0);
+        var b = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => a.Value >= b.Value);
 
         // act
@@ -511,8 +511,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithEqualExpressions()
     {
         // arrange
-        var a = new TestReactive<int> { Value = 0 };
-        var b = new TestReactive<int> { Value = 0 };
+        var a = new ReactiveProperty<int>(0);
+        var b = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => a.Value == b.Value);
 
         // act
@@ -534,8 +534,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithNotEqualExpressions()
     {
         // arrange
-        var a = new TestReactive<int> { Value = 0 };
-        var b = new TestReactive<int> { Value = 0 };
+        var a = new ReactiveProperty<int>(0);
+        var b = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => a.Value != b.Value);
 
         // act
@@ -557,8 +557,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithLeftShiftExpressions()
     {
         // arrange
-        var a = new TestReactive<int> { Value = 0 };
-        var b = new TestReactive<int> { Value = 0 };
+        var a = new ReactiveProperty<int>(0);
+        var b = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => a.Value << b.Value);
 
         // act
@@ -580,8 +580,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithRightShiftExpressions()
     {
         // arrange
-        var a = new TestReactive<int> { Value = 0 };
-        var b = new TestReactive<int> { Value = 0 };
+        var a = new ReactiveProperty<int>(0);
+        var b = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => a.Value >> b.Value);
 
         // act
@@ -603,8 +603,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithArrayIndexExpressions()
     {
         // arrange
-        var target = new TestReactive<int[]> { Value = [1, 2, 3, 4, 5, 6, 7, 8] };
-        var index = new TestReactive<int> { Value = 0 };
+        var target = new ReactiveProperty<int[]>([1, 2, 3, 4, 5, 6, 7, 8]);
+        var index = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => target.Value[index.Value]);
 
         // act
@@ -635,8 +635,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithAndAlsoExpressions()
     {
         // arrange
-        var a = new TestReactive<bool> { Value = false };
-        var b = new TestReactive<bool> { Value = false };
+        var a = new ReactiveProperty<bool>(false);
+        var b = new ReactiveProperty<bool>(false);
         var counter = new Counter();
         var sut = Reactive.Observe(() => a.Value && counter.Increment(b.Value));
 
@@ -663,8 +663,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithOrElseExpressions()
     {
         // arrange
-        var a = new TestReactive<bool> { Value = false };
-        var b = new TestReactive<bool> { Value = false };
+        var a = new ReactiveProperty<bool>(false);
+        var b = new ReactiveProperty<bool>(false);
         var counter = new Counter();
         var sut = Reactive.Observe(() => a.Value || counter.Increment(b.Value));
 
@@ -691,8 +691,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithCoalesceExpressions()
     {
         // arrange
-        var a = new TestReactive<string?> { Value = null };
-        var b = new TestReactive<string> { Value = "Success" };
+        var a = new ReactiveProperty<string?>(null);
+        var b = new ReactiveProperty<string>("Success");
         var counter = new Counter();
         var sut = Reactive.Observe(() => a.Value ?? counter.Increment(b.Value));
 
@@ -719,8 +719,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithCoalesceNullableExpressions()
     {
         // arrange
-        var a = new TestReactive<int?> { Value = null };
-        var b = new TestReactive<int> { Value = 123 };
+        var a = new ReactiveProperty<int?>(null);
+        var b = new ReactiveProperty<int>(123);
         var counter = new Counter();
         var sut = Reactive.Observe(() => a.Value ?? counter.Increment(b.Value));
 
@@ -747,8 +747,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithCoalesceConversionNullableExpressions()
     {
         // arrange
-        var a = new TestReactive<byte[]?> { Value = null };
-        var b = new TestReactive<ReadOnlyMemory<byte>> { Value = new byte[] { 1, 2, 3, 4, 5 } };
+        var a = new ReactiveProperty<byte[]?>(null);
+        var b = new ReactiveProperty<ReadOnlyMemory<byte>>(new byte[] { 1, 2, 3, 4, 5 });
         var counter = new Counter();
         var sut = Reactive.Observe(() => a.Value ?? counter.Increment(b.Value));
 
@@ -775,8 +775,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithCoalesceConversionReferenceExpressions()
     {
         // arrange
-        var a = new TestReactive<Memory<byte>?> { Value = null };
-        var b = new TestReactive<ReadOnlyMemory<byte>> { Value = new byte[] { 1, 2, 3, 4, 5 } };
+        var a = new ReactiveProperty<Memory<byte>?>(null);
+        var b = new ReactiveProperty<ReadOnlyMemory<byte>>(new byte[] { 1, 2, 3, 4, 5 });
         var counter = new Counter();
         var sut = Reactive.Observe(() => a.Value ?? counter.Increment(b.Value));
 
@@ -803,9 +803,9 @@ public static class ReactiveTests
     public static void Observe_WorksWithConditionExpressions()
     {
         // arrange
-        var test = new TestReactive<bool> { Value = false };
-        var ifTrue = new TestReactive<int> { Value = 1 };
-        var ifFalse = new TestReactive<int> { Value = 2 };
+        var test = new ReactiveProperty<bool>(false);
+        var ifTrue = new ReactiveProperty<int>(1);
+        var ifFalse = new ReactiveProperty<int>(2);
         var trueCounter = new Counter();
         var falseCounter = new Counter();
         var sut = Reactive.Observe(() =>
@@ -841,8 +841,8 @@ public static class ReactiveTests
     public static void Observe_WorksWithNestedDelegates()
     {
         // arrange
-        var source = new TestReactive<int[]?> { Value = null };
-        var divisor = new TestReactive<int> { Value = 2 };
+        var source = new ReactiveProperty<int[]?>(null);
+        var divisor = new ReactiveProperty<int>(2);
         var sut = Reactive.Observe(() =>
             source.Value!.Where(v => v % divisor.Value == 0).ToArray()
         );
@@ -866,7 +866,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithNotExpressions()
     {
         // arrange
-        var source = new TestReactive<bool> { Value = false };
+        var source = new ReactiveProperty<bool>(false);
         var sut = Reactive.Observe(() => !source.Value);
 
         // act
@@ -884,7 +884,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithDecrementExpressions()
     {
         // arrange
-        var source = new TestReactive<int> { Value = 0 };
+        var source = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(Wrap<int>(() => source.Value, Expression.Decrement));
 
         // act
@@ -902,7 +902,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithIncrementExpressions()
     {
         // arrange
-        var source = new TestReactive<int> { Value = 0 };
+        var source = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(Wrap<int>(() => source.Value, Expression.Increment));
 
         // act
@@ -935,7 +935,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithUnboxExpressions()
     {
         // arrange
-        var source = new TestReactive<object> { Value = 0 };
+        var source = new ReactiveProperty<object>(0);
         var sut = Reactive.Observe(
             Wrap<int, Type>(() => source.Value, typeof(int), Expression.Unbox)
         );
@@ -955,7 +955,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithUnaryPlusExpressions()
     {
         // arrange
-        var source = new TestReactive<int> { Value = 0 };
+        var source = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(Wrap<int>(() => source.Value, Expression.UnaryPlus));
 
         // act
@@ -973,7 +973,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithAsExpressions()
     {
         // arrange
-        var source = new TestReactive<object> { Value = 0 };
+        var source = new ReactiveProperty<object>(0);
         var sut = Reactive.Observe(() => source.Value as int?);
 
         // act
@@ -991,7 +991,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithConvertExpressions()
     {
         // arrange
-        var source = new TestReactive<object> { Value = 0 };
+        var source = new ReactiveProperty<object>(0);
         var sut = Reactive.Observe(() => (int)source.Value);
 
         // act
@@ -1009,7 +1009,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithConvertCheckedExpressions()
     {
         // arrange
-        var source = new TestReactive<float> { Value = 0 };
+        var source = new ReactiveProperty<float>(0);
         var sut = Reactive.Observe(() => checked((int)source.Value));
 
         // act
@@ -1027,7 +1027,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithArrayLengthExpressions()
     {
         // arrange
-        var source = new TestReactive<int[]?> { Value = null };
+        var source = new ReactiveProperty<int[]?>(null);
         var sut = Reactive.Observe(() => source.Value!.Length);
 
         // act
@@ -1045,7 +1045,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithOnesComplimentExpressions()
     {
         // arrange
-        var source = new TestReactive<int> { Value = 0 };
+        var source = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => ~source.Value);
 
         // act
@@ -1065,7 +1065,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithIsTrueExpressions()
     {
         // arrange
-        var source = new TestReactive<bool> { Value = false };
+        var source = new ReactiveProperty<bool>(false);
         var sut = Reactive.Observe(Wrap<bool>(() => source.Value, Expression.IsTrue));
 
         // act
@@ -1083,7 +1083,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithIsFalseExpressions()
     {
         // arrange
-        var source = new TestReactive<bool> { Value = false };
+        var source = new ReactiveProperty<bool>(false);
         var sut = Reactive.Observe(Wrap<bool>(() => source.Value, Expression.IsFalse));
 
         // act
@@ -1101,7 +1101,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithNegateExpressions()
     {
         // arrange
-        var source = new TestReactive<int> { Value = 0 };
+        var source = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => -source.Value);
 
         // act
@@ -1121,7 +1121,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithNegateCheckedExpressions()
     {
         // arrange
-        var source = new TestReactive<int> { Value = 0 };
+        var source = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => checked(-source.Value));
 
         // act
@@ -1141,7 +1141,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithArraySizeExpressions()
     {
         // arrange
-        var source = new TestReactive<int> { Value = 0 };
+        var source = new ReactiveProperty<int>(0);
         var sut = Reactive.Observe(() => new int[source.Value]);
 
         // act
@@ -1327,15 +1327,15 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForAnUnreactiveExpression()
     {
         // arrange
-        var ctx = new TestUnreactive { Id = "123" };
-        var sut = Reactive.Observe(() => ctx.Id);
+        var ctx = new UnreactiveProperty<string>("123");
+        var sut = Reactive.Observe(() => ctx.Value);
 
         // act
         using var subscription = sut.Test();
 
         // assert
         _ = subscription.ShouldBe("123").ThenBeCompleted();
-        ctx.Id = "456";
+        ctx.Value = "456";
         subscription.ShouldBeEmpty();
         subscription.Dispose();
         subscription.ShouldBeEmpty();
@@ -1345,21 +1345,19 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForAReactiveProperty()
     {
         // arrange
-        var ctx = new TestReactive { Property = "123" };
-        var sut = Reactive.Observe(() => ctx.Property);
+        var ctx = new ReactiveProperty<string>("123");
+        var sut = Reactive.Observe(() => ctx.Value);
 
         // act
         using var subscription = sut.Test();
 
         // assert
         subscription.ShouldBe("123").Only();
-        ctx.Property = "456";
-        ctx.SetField("FAIL");
-        ctx.SetMethod("FAIL");
+        ctx.Value = "456";
         subscription.ShouldBe("456").Only();
         subscription.Dispose();
         subscription.ShouldBeEmpty();
-        ctx.Property = "789";
+        ctx.Value = "789";
         subscription.ShouldBeEmpty();
     }
 
@@ -1367,17 +1365,15 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForAReactiveField()
     {
         // arrange
-        var ctx = new TestReactive { Field = "123" };
-        var sut = Reactive.Observe(() => ctx.Field);
+        var ctx = new ReactiveField<string>("123");
+        var sut = Reactive.Observe(() => ctx.Value);
 
         // act
         using var subscription = sut.Test();
 
         // assert
         subscription.ShouldBe("123").Only();
-        ctx.Property = "FAIL";
         ctx.SetField("456");
-        ctx.SetMethod("FAIL");
         subscription.ShouldBe("456").Only();
         subscription.Dispose();
         subscription.ShouldBeEmpty();
@@ -1389,17 +1385,14 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForAReactiveMethod()
     {
         // arrange
-        var ctx = new TestReactive();
-        ctx.SetMethod("123");
-        var sut = Reactive.Observe(() => ctx.Method());
+        var ctx = new ReactiveMethod<string>("123");
+        var sut = Reactive.Observe(() => ctx.Value());
 
         // act
         using var subscription = sut.Test();
 
         // assert
         subscription.ShouldBe("123").Only();
-        ctx.Property = "FAIL";
-        ctx.SetField("FAIL");
         ctx.SetMethod("456");
         subscription.ShouldBe("456").Only();
         subscription.Dispose();
@@ -1412,8 +1405,8 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForANullableStructUsingValueToString()
     {
         // arrange
-        var source = new TestReactive<Guid?> { Value = Guid.Empty };
-        var sut = Reactive.Observe(() => source.Value.Value.ToString());
+        var source = new ReactiveProperty<Guid?>(Guid.Empty);
+        var sut = Reactive.Observe(() => source.Value!.Value.ToString());
 
         // act
         using var subscription = sut.Test();
@@ -1430,8 +1423,8 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForANullableStructUsingValue()
     {
         // arrange
-        var source = new TestReactive<Guid?> { Value = Guid.Empty };
-        var sut = Reactive.Observe(() => source.Value.Value);
+        var source = new ReactiveProperty<Guid?>(Guid.Empty);
+        var sut = Reactive.Observe(() => source.Value!.Value);
 
         // act
         using var subscription = sut.Test();
@@ -1448,7 +1441,7 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForANullableStructUsingHasValue()
     {
         // arrange
-        var source = new TestReactive<Guid?> { Value = Guid.Empty };
+        var source = new ReactiveProperty<Guid?>(Guid.Empty);
         var sut = Reactive.Observe(() => source.Value.HasValue.ToString());
 
         // act
@@ -1466,7 +1459,7 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForANullableStructUsingGetValueOrDefault()
     {
         // arrange
-        var source = new TestReactive<Guid?> { Value = Guid.Empty };
+        var source = new ReactiveProperty<Guid?>(Guid.Empty);
         var sut = Reactive.Observe(() => source.Value.GetValueOrDefault().ToString());
 
         // act
@@ -1484,42 +1477,52 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForANullableNestedReactiveObject()
     {
         // arrange
-        var ctx = new NullableInnerReactive();
-        var inner = new TestReactive();
-        var property = Reactive.Observe(() => ctx.Inner!.Property);
-        var field = Reactive.Observe(() => ctx.Inner!.Field);
-        var method = Reactive.Observe(() => ctx.Inner!.Method());
+        var prop = new ReactiveProperty<ReactiveProperty<string>?>(null);
+        var field = new ReactiveField<ReactiveField<string>?>(null);
+        var method = new ReactiveMethod<ReactiveMethod<string>?>(null);
+        var innerProp = new ReactiveProperty<string>("Property");
+        var innerField = new ReactiveField<string>("Field");
+        var innerMethod = new ReactiveMethod<string>("Method");
+        var propReactive = Reactive.Observe(() => prop.Value!.Value);
+        var fieldReactive = Reactive.Observe(() => field.Value!.Value);
+        var methodReactive = Reactive.Observe(() => method.Value()!.Value());
 
         // act
-        using var propertySub = property.Test();
-        using var fieldSub = field.Test();
-        using var methodSub = method.Test();
+        using var propertySub = propReactive.Test();
+        using var fieldSub = fieldReactive.Test();
+        using var methodSub = methodReactive.Test();
 
         // assert
         propertySub.ShouldBe(null).Only();
         fieldSub.ShouldBe(null).Only();
         methodSub.ShouldBe(null).Only();
-        ctx.Inner = inner;
+        prop.Value = innerProp;
+        field.SetField(innerField);
+        method.SetMethod(innerMethod);
         propertySub.ShouldBe("Property").Only();
         fieldSub.ShouldBe("Field").Only();
         methodSub.ShouldBe("Method").Only();
-        inner.Property = "abc";
-        inner.SetField("def");
-        inner.SetMethod("ghi");
+        innerProp.Value = "abc";
+        innerField.SetField("def");
+        innerMethod.SetMethod("ghi");
         propertySub.ShouldBe("abc").Only();
         fieldSub.ShouldBe("def").Only();
         methodSub.ShouldBe("ghi").Only();
-        ctx.Inner = null;
+        prop.Value = null;
+        field.SetField(null);
+        method.SetMethod(null);
         propertySub.ShouldBe(null).Only();
         fieldSub.ShouldBe(null).Only();
         methodSub.ShouldBe(null).Only();
-        inner.Property = "123";
-        inner.SetField("456");
-        inner.SetMethod("789");
+        innerProp.Value = "123";
+        innerField.SetField("456");
+        innerMethod.SetMethod("789");
         propertySub.ShouldBeEmpty();
         fieldSub.ShouldBeEmpty();
         methodSub.ShouldBeEmpty();
-        ctx.Inner = inner;
+        prop.Value = innerProp;
+        field.SetField(innerField);
+        method.SetMethod(innerMethod);
         propertySub.ShouldBe("123").Only();
         fieldSub.ShouldBe("456").Only();
         methodSub.ShouldBe("789").Only();
@@ -1535,21 +1538,19 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForAComputedReactiveProperty()
     {
         // arrange
-        var ctx = new TestReactive { Property = "123" };
-        var sut = Reactive.Observe(() => $"The value is currently: {ctx.Property}");
+        var ctx = new ReactiveProperty<string>("123");
+        var sut = Reactive.Observe(() => $"The value is currently: {ctx.Value}");
 
         // act
         using var subscription = sut.Test();
 
         // assert
         subscription.ShouldBe("The value is currently: 123").Only();
-        ctx.Property = "456";
-        ctx.SetField("FAIL");
-        ctx.SetMethod("FAIL");
+        ctx.Value = "456";
         subscription.ShouldBe("The value is currently: 456").Only();
         subscription.Dispose();
         subscription.ShouldBeEmpty();
-        ctx.Property = "789";
+        ctx.Value = "789";
         subscription.ShouldBeEmpty();
     }
 
@@ -1557,13 +1558,15 @@ public static class ReactiveTests
     public static void Observe_ShouldReturnTheCurrentValueForAComputedAnonymousType()
     {
         // arrange
-        var ctx = new TestReactive();
+        var prop = new ReactiveProperty<string>("Property");
+        var field = new ReactiveField<string>("Field");
+        var method = new ReactiveMethod<string>("Method");
         var sut = Reactive.Observe(() =>
             new
             {
-                ctx.Property,
-                ctx.Field,
-                Method = ctx.Method(),
+                Property = prop.Value,
+                Field = field.Value,
+                Method = method.Value(),
             }
         );
 
@@ -1581,9 +1584,9 @@ public static class ReactiveTests
                 }
             )
             .Only();
-        ctx.Property = "123";
-        ctx.SetField("456");
-        ctx.SetMethod("789");
+        prop.Value = "123";
+        field.SetField("456");
+        method.SetMethod("789");
         subscription
             .ShouldBe(
                 new
@@ -1612,7 +1615,7 @@ public static class ReactiveTests
             .Only();
         subscription.Dispose();
         subscription.ShouldBeEmpty();
-        ctx.Property = "789";
+        prop.Value = "789";
         subscription.ShouldBeEmpty();
     }
 
@@ -1656,9 +1659,9 @@ public static class ReactiveTests
     }
 }
 
-internal sealed class TestUnreactive
+internal sealed class UnreactiveProperty<T>(T init)
 {
-    public required string Id { get; set; }
+    public T Value { get; set; } = init;
 }
 
 internal sealed class ComplexResult
@@ -1674,15 +1677,6 @@ internal sealed class ComplexInnerResult
     public int V3 { get; set; }
     public int V4 { get; set; }
     public int V5 { get; set; }
-}
-
-internal sealed class TestReactive<T> : ReactiveObject
-{
-    public required T Value
-    {
-        get;
-        set => Set(ref field, value);
-    }
 }
 
 internal sealed class TestMultipleReactive<T1, T2, T3, T4, T5> : ReactiveObject
@@ -1714,45 +1708,39 @@ internal sealed class TestMultipleReactive<T1, T2, T3, T4, T5> : ReactiveObject
     }
 }
 
-internal sealed class TestReactive : ReactiveObject
+internal sealed class ReactiveProperty<T>(T init) : ReactiveObject
 {
-    private string _current = "Method";
-    public string Property
+    public T Value
     {
         get;
         set => Set(ref field, value);
-    } = "Property";
-    public string Field = "Field";
+    } = init;
+}
 
-    public string Method()
-    {
-        return _current;
-    }
+internal sealed class ReactiveField<T>(T init) : ReactiveObject
+{
+    public T Value = init;
 
-    public void SetField(string value)
+    public void SetField(T value)
     {
-        Field = value;
-        OnMemberChanged(nameof(Field));
-    }
-
-    public void FieldHasChanged()
-    {
-        OnMemberChanged(nameof(Field));
-    }
-
-    public void SetMethod(string value)
-    {
-        _current = value;
-        OnMemberChanged(nameof(Method));
+        Value = value;
+        OnMemberChanged(nameof(Value));
     }
 }
 
-internal sealed class NullableInnerReactive : ReactiveObject
+internal sealed class ReactiveMethod<T>(T init) : ReactiveObject
 {
-    public TestReactive? Inner
+    private T _value = init;
+
+    public T Value()
     {
-        get;
-        set => Set(ref field, value);
+        return _value;
+    }
+
+    public void SetMethod(T value)
+    {
+        _value = value;
+        OnMemberChanged(nameof(Value));
     }
 }
 

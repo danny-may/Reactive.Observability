@@ -103,7 +103,7 @@ internal static class ExprUtil
             var body = path[^1];
             for (var i = path.Count - 2; i >= 0; i--)
                 body = IfNull(variables[i], path[i], ifNull, body, returnType);
-            if (left is ParameterExpression)
+            if (variables.Count > 0 && variables[0] == left)
                 variables.RemoveAt(0);
 
             if (variables.Count == 0)

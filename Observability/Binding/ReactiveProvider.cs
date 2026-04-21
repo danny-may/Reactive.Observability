@@ -23,7 +23,7 @@ public sealed class ReactiveProvider(IReactiveBinder binder)
     /// <typeparam name="TDelegate"></typeparam>
     /// <param name="expression"></param>
     /// <returns></returns>
-    public Delegate Build<TDelegate>(Expression<TDelegate> expression)
+    internal Delegate Build<TDelegate>(Expression<TDelegate> expression)
         where TDelegate : Delegate
     {
         expression = ExpressionNormalizer.Normalize(expression, out var context, out var constants);
@@ -37,19 +37,19 @@ public sealed class ReactiveProvider(IReactiveBinder binder)
 
     private Delegate Compile(
         Expression body,
-        (ParameterExpression, ReadOnlyCollection<ParameterExpression>) context
+        (ParameterExpression Context, ReadOnlyCollection<ParameterExpression> Parameters) arg
     )
     {
-        var observable = ReactiveRewriter.Rewrite(body, binder, [context.Item1, .. context.Item2]);
+        var observable = ReactiveRewriter.Rewrite(body, binder, [arg.Context, .. arg.Parameters]);
         var boundLambda = Expression.Lambda(
-            TypeLookup.Delegate(context.Item2.Map(static x => x.Type), observable.Type),
+            TypeLookup.Delegate(arg.Parameters.Map(static x => x.Type), observable.Type),
             observable,
-            [.. context.Item2]
+            [.. arg.Parameters]
         );
         var lambda = Expression.Lambda(
-            TypeLookup.Delegate([context.Item1.Type], boundLambda.Type),
+            TypeLookup.Delegate([arg.Context.Type], boundLambda.Type),
             boundLambda,
-            [context.Item1]
+            [arg.Context]
         );
         return lambda.Compile();
     }

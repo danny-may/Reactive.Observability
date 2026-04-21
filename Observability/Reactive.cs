@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
-using Observability.Binding;
+﻿using Observability.Binding;
 
 namespace Observability;
 
@@ -14,11 +12,4 @@ public static partial class Reactive
                 new NotifyCollectionChangedBinderItem()
             )
         );
-
-    /// <inheritdoc cref="ReactiveProvider.Build{TDelegate}(Expression{TDelegate})"/>
-    public static Delegate Build<TDelegate>(Expression<TDelegate> expression)
-        where TDelegate : Delegate
-    {
-        return Provider.Build(expression);
-    }
 }
