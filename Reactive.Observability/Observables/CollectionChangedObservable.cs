@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Reactive.Disposables;
 
 namespace Reactive.Observability.Observables;
 
@@ -9,8 +8,30 @@ public sealed class CollectionChangedObservable<T>(T source) : WatchChangeObserv
 {
     protected override IDisposable? Subscribe(T source, Action onChange)
     {
-        source.CollectionChanged += OnCollectionChanged;
-        return Disposable.Create(() => source.CollectionChanged -= OnCollectionChanged);
-        void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => onChange();
+        return new Subscription(source, (_, _) => onChange());
+    }
+
+    private sealed class Subscription : IDisposable
+    {
+        private T _source;
+        private NotifyCollectionChangedEventHandler? _handler;
+
+        public Subscription(T source, NotifyCollectionChangedEventHandler handler)
+        {
+            _source = source;
+            _handler = handler;
+            source.CollectionChanged += handler;
+        }
+
+        public void Dispose()
+        {
+            if (_handler is not { } handler)
+                return;
+
+            _handler = null;
+            var source = _source;
+            _source = default!;
+            source.CollectionChanged -= handler;
+        }
     }
 }

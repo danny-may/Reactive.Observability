@@ -1,15 +1,13 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
-using System.Reactive;
 using System.Reactive.Linq;
+using System.Reflection;
 using AwesomeAssertions;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Reactive.Observability.UnitTests;
+namespace Reactive.Observability;
 
-public static class ReactiveTests
+public static partial class ReactiveTests
 {
     [Theory]
     [InlineData(0, -10)]
@@ -1047,7 +1045,7 @@ public static class ReactiveTests
     {
         // arrange
         var source = new ReactiveProperty<int>(0);
-        var sut = Reactive.Observe(() => ~source.Value);
+        var sut = Reactive.Observe(Wrap<int>(() => source.Value, Expression.OnesComplement));
 
         // act
         using var subscription = sut.Test();
@@ -1162,7 +1160,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithArrayElementsExpressions()
     {
         // arrange
-        var source = new TestMultipleReactive<int, int, int, int, int>
+        var source = new ReactiveProperties<int, int, int, int, int>
         {
             V1 = 0,
             V2 = 1,
@@ -1227,7 +1225,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithListInitExpressions()
     {
         // arrange
-        var source = new TestMultipleReactive<int, int, int, int, int>
+        var source = new ReactiveProperties<int, int, int, int, int>
         {
             V1 = 0,
             V2 = 1,
@@ -1266,7 +1264,7 @@ public static class ReactiveTests
     public static void Observe_WorksWithMemberInitExpressions()
     {
         // arrange
-        var source = new TestMultipleReactive<int, int, int, int, int>
+        var source = new ReactiveProperties<int, int, int, int, int>
         {
             V1 = 0,
             V2 = 1,
@@ -1333,6 +1331,50 @@ public static class ReactiveTests
             _ = current.Should().NotBeSameAs(value);
             value = current;
         }
+    }
+
+    public static TheoryData<int> MemberCounts => [.. Enumerable.Range(1, 100)];
+    private static readonly PropertyInfo _reactivePropertyValue =
+        typeof(ReactiveProperty<int>).GetProperty("Value")!;
+
+    [Theory]
+    [MemberData(nameof(MemberCounts))]
+    public static void Observe_WorksWithManyMembers(int memberCount)
+    {
+        // arrange
+        var sources = Enumerable
+            .Range(0, memberCount)
+            .Select(i => new ReactiveProperty<int>(i))
+            .ToArray();
+        var sut = Reactive.Observe(
+            Expression.Lambda<Func<int>>(
+                sources
+                    .Select(v =>
+                        Expression.Property(Expression.Constant(v), _reactivePropertyValue)
+                    )
+                    .Aggregate<Expression>(Expression.Add)
+            )
+        );
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription.ShouldBe(sources.Sum(static v => v.Value)).Only();
+        var rand = new Random(memberCount);
+        var swapCount = memberCount * 2;
+        for (var i = 0; i < swapCount; i++)
+        {
+            var source = sources[rand.Next(sources.Length)];
+            var old = source.Value;
+            while (source.Value == old)
+                source.Value = rand.Next(1000);
+            subscription.ShouldBe(sources.Sum(static v => v.Value)).Only();
+        }
+
+        subscription.Dispose();
+        sources[rand.Next(sources.Length)].Value *= -1;
+        subscription.ShouldBeEmpty();
     }
 
     [Fact]
@@ -1733,7 +1775,7 @@ internal sealed class ComplexInnerResult
     public int V5 { get; set; }
 }
 
-internal sealed class TestMultipleReactive<T1, T2, T3, T4, T5> : ReactiveObject
+internal sealed class ReactiveProperties<T1, T2, T3, T4, T5> : ReactiveObject
 {
     public required T1 V1
     {
@@ -1795,117 +1837,5 @@ internal sealed class ReactiveMethod<T>(T init) : ReactiveObject
     {
         _value = value;
         OnMemberChanged(nameof(Value));
-    }
-}
-
-internal static class ObservableTest
-{
-    public static ObservableTest<T> Test<T>(this IObservable<T> source)
-    {
-        return new(source);
-    }
-}
-
-internal sealed class ObservableTest<T> : IDisposable
-{
-    private readonly IDisposable _subscription;
-    private readonly ConcurrentQueue<Notification<T>> _messages = [];
-    private readonly Assertion _assertion;
-
-    public ObservableTest(IObservable<T> source)
-    {
-        _assertion = new(_messages);
-        _subscription = source.Materialize().Subscribe(OnNext);
-    }
-
-    private void OnNext(Notification<T> notification)
-    {
-        _messages.Enqueue(notification);
-    }
-
-    public void ShouldBeEmpty()
-    {
-        _assertion.Only();
-    }
-
-    public Assertion ShouldBe(T value)
-    {
-        return _assertion.ThenBe(value);
-    }
-
-    public Assertion ShouldBe(T value, out T actual)
-    {
-        return _assertion.ThenBe(value, out actual);
-    }
-
-    public Assertion ShouldBeCompleted()
-    {
-        return _assertion.ThenBeCompleted();
-    }
-
-    public Assertion ShouldBeError(Exception exception)
-    {
-        return _assertion.ThenBeError(exception);
-    }
-
-    public sealed class Assertion(ConcurrentQueue<Notification<T>> messages)
-    {
-        public void Only()
-        {
-            _ = messages.TryDequeue(out var notification);
-            _ = notification.Should().BeNull();
-        }
-
-        public Assertion ThenBe(T value)
-        {
-            return ThenBe(value, out _);
-        }
-
-        public Assertion ThenBe(T value, out T actual)
-        {
-            _ = messages.TryDequeue(out var notification).Should().BeTrue();
-            _ = notification
-                .Should()
-                .BeEquivalentTo(
-                    Notification.CreateOnNext(value),
-                    op => op.ComparingByMembers<Notification<T>>()
-                );
-            actual = notification.Value;
-            return this;
-        }
-
-        public Assertion ThenBeCompleted()
-        {
-            _ = messages.TryDequeue(out var notification).Should().BeTrue();
-            _ = notification
-                .Should()
-                .BeEquivalentTo(
-                    Notification.CreateOnCompleted<T>(),
-                    op => op.ComparingByMembers<Notification<T>>()
-                );
-            return this;
-        }
-
-        public Assertion ThenBeError(Exception exception)
-        {
-            _ = messages.TryDequeue(out var notification).Should().BeTrue();
-            _ = notification
-                .Should()
-                .BeEquivalentTo(
-                    Notification.CreateOnError<T>(exception),
-                    op =>
-                        op.ComparingByMembers<Notification<T>>()
-                            .Excluding(x => x.Value)
-                            .Excluding(x => x.Exception!.StackTrace)
-                            .Excluding(x => x.Exception!.Source)
-                            .Excluding(x => x.Exception!.TargetSite)
-                );
-            return this;
-        }
-    }
-
-    public void Dispose()
-    {
-        _subscription.Dispose();
     }
 }

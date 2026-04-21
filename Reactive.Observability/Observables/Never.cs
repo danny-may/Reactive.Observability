@@ -1,3 +1,6 @@
 ﻿namespace Reactive.Observability.Observables;
 
-internal readonly struct Never;
+/// <summary>
+/// An empty type, meant to signify that <see cref="System.IObserver{T}.OnNext(T)"/> will never be called.
+/// </summary>
+public readonly struct Never;

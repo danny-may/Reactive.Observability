@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Reactive.Disposables;
 
 namespace Reactive.Observability.Observables;
 
@@ -10,7 +9,7 @@ internal class DefaultObservable<T> : IObservable<T?>
     {
         observer.OnNext(default);
         observer.OnCompleted();
-        return Disposable.Empty;
+        return EmptyDisposable.Instance;
     }
 }
 

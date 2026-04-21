@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Reactive;
+using Reactive.Observability.Observables;
 
 namespace Reactive.Observability;
 
-public delegate IObservable<Unit> WatchStaticChanges();
+public delegate IObservable<Nothing> WatchStaticChanges();

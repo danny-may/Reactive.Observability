@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive.Disposables;
 
 namespace Reactive.Observability.Observables;
 
@@ -13,7 +12,7 @@ public abstract class WatchChangeObservable<T>(T source) : IObservable<T>
         {
             EmitChange();
             observer.OnCompleted();
-            return Disposable.Empty;
+            return EmptyDisposable.Instance;
         }
 
         try

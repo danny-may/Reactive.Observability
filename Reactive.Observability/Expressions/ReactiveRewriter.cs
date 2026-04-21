@@ -5,8 +5,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Reactive.Observability.Binding;
@@ -42,12 +40,10 @@ internal sealed class ReactiveRewriter
         ImmutableArray<ParameterExpression> Roots
     )
     {
-#pragma warning disable IDE0028 // Simplify collection initialization
         public Dictionary<ParameterExpression, IObservableSource> Parameters { get; } =
             new(ReferenceEqualityComparer.Instance);
         public Dictionary<Expression, Result> Results { get; } =
             new(ReferenceEqualityComparer.Instance);
-#pragma warning restore IDE0028 // Simplify collection initialization
     }
 
     public interface IObservableSource
@@ -446,11 +442,11 @@ internal sealed class ReactiveRewriter
         }
         else
         {
-            var param = Expression.Parameter(instance?.Type ?? typeof(Unit));
+            var param = Expression.Parameter(instance?.Type ?? typeof(Nothing));
             var @this = TranslateNullable(instance, state);
             var mapping = new ResultMap(arguments, state);
             if (
-                (@this.HasValue && ContainsLocal(@this.Value.Dependencies, state))
+                (@this.TryGetValue(out var v) && ContainsLocal(v.Dependencies, state))
                 || ContainsLocal(mapping.AllDependencies, state)
             )
             {

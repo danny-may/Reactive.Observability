@@ -3,10 +3,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>Reactive.Observability</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions" Version="9.4.0" />
+    <PackageReference Include="FakeItEasy" Version="9.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
@@ -18,5 +20,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Reactive.Observability\Reactive.Observability.csproj" />
+    <ProjectReference Include="..\Reactive.Observability.SourceGenerator.Internal.UnitTests\Reactive.Observability.SourceGenerator.Internal.UnitTests.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Analyzer</OutputItemType>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 </Project>

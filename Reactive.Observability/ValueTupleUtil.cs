@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Reactive.Observability;
@@ -117,47 +116,5 @@ internal static class ValueTupleUtil
         }
 
         throw new ArgumentException("Type is not a valid ValueTuple", nameof(valueTuple));
-    }
-
-    public static FieldInfo[][] Fields(Type type)
-    {
-        if (!type.IsGenericType)
-        {
-            if (type == typeof(ValueTuple))
-                return [];
-        }
-        else
-        {
-            var fields = type.GetFields();
-            var open = type.GetGenericTypeDefinition();
-            return fields.Length switch
-            {
-                1 when open == typeof(ValueTuple<>) => Wrap(fields),
-                2 when open == typeof(ValueTuple<,>) => Wrap(fields),
-                3 when open == typeof(ValueTuple<,,>) => Wrap(fields),
-                4 when open == typeof(ValueTuple<,,,>) => Wrap(fields),
-                5 when open == typeof(ValueTuple<,,,,>) => Wrap(fields),
-                6 when open == typeof(ValueTuple<,,,,,>) => Wrap(fields),
-                7 when open == typeof(ValueTuple<,,,,,,>) => Wrap(fields),
-                8 when open == typeof(ValueTuple<,,,,,,,>) =>
-                [
-                    .. Wrap(fields.AsSpan(0, 7)),
-                    .. Prefix(fields[7], Fields(fields[7].FieldType)),
-                ],
-                _ => throw new ArgumentException("Type is not a valid ValueTuple", nameof(type)),
-            };
-        }
-
-        throw new ArgumentException("Type is not a valid ValueTuple", nameof(type));
-    }
-
-    private static T[][] Wrap<T>(ReadOnlySpan<T> source)
-    {
-        return source.Map(static T[] (x) => [x]);
-    }
-
-    private static T[][] Prefix<T>(T prefix, ReadOnlySpan<T[]> source)
-    {
-        return source.Map(prefix, static T[] (p, x) => [p, .. x]);
     }
 }

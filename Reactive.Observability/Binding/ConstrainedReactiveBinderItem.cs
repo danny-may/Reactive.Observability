@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Reactive;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Reactive.Observability.Observables;
 
 namespace Reactive.Observability.Binding;
 
@@ -30,7 +30,7 @@ public abstract class ConstrainedReactiveBinderItem<TConstraint> : IReactiveBind
 
     bool IReactiveBinderItem.IsStaticSupported(MemberInfo member) => false;
 
-    IObservable<Unit> IReactiveBinderItem.WatchStatic(MemberInfo member) =>
+    IObservable<Nothing> IReactiveBinderItem.WatchStatic(MemberInfo member) =>
         throw new NotSupportedException("Static members cannot satisfy an instance constraint");
 
     public abstract IObservable<TInstance> Watch<TInstance>(TInstance instance, MemberInfo member)

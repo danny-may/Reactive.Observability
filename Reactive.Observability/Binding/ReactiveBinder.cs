@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Reactive.Observability.Observables;
 
 namespace Reactive.Observability.Binding;
 
@@ -40,7 +40,7 @@ public sealed class ReactiveBinder(params IEnumerable<IReactiveBinderItem> items
                     if (proxy.IsSupported(binder, instanceMember))
                         return proxy.Create(binder, src, instanceMember);
 
-                return Observable.Return(src);
+                return new ConstantObservable<TInstance>(src);
             };
         }
 

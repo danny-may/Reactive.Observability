@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive.Disposables;
 
 namespace Reactive.Observability.Observables;
 
@@ -15,10 +14,10 @@ internal sealed class FuncObservable<T>(Func<T> onSubscribe) : IObservable<T>
         catch (Exception ex)
         {
             observer.OnError(ex);
-            return Disposable.Empty;
+            return EmptyDisposable.Instance;
         }
         observer.OnNext(result);
         observer.OnCompleted();
-        return Disposable.Empty;
+        return EmptyDisposable.Instance;
     }
 }

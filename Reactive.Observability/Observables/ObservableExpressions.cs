@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Reactive.Observability.Expressions;
@@ -39,34 +34,6 @@ internal static class ObservableExpressions
                 ]
             )
         );
-    }
-
-    public static ObservableExpression Switch(
-        ObservableExpression value,
-        ObservableExpression? @default,
-        MethodInfo? comparer,
-        IEnumerable<KeyValuePair<ImmutableArray<ObservableExpression>, ObservableExpression>> cases
-    )
-    {
-        return SelectSwitch(
-            value,
-            value =>
-                new(
-                    Expression.Switch(
-                        value,
-                        @default,
-                        comparer,
-                        cases.Select(static x =>
-                            Expression.SwitchCase(x.Value, x.Key.Map(static x => x.Value))
-                        )
-                    )
-                )
-        );
-    }
-
-    public static ObservableExpression Return(Expression value)
-    {
-        return Collect([], _ => value);
     }
 
     public static ObservableExpression Collect(
@@ -114,23 +81,6 @@ internal static class ObservableExpressions
         );
     }
 
-    public static ObservableExpression Condition(
-        Expression test,
-        ObservableExpression ifTrue,
-        ObservableExpression ifFalse,
-        Type elementType
-    )
-    {
-        return new(
-            Expression.Condition(
-                test,
-                ifTrue,
-                ifFalse,
-                typeof(IObservable<>).MakeGenericType(elementType)
-            )
-        );
-    }
-
     public static ObservableExpression Watch(Delegate watch, ObservableExpression instance)
     {
         var target = watch.Target is null ? null : Expression.Constant(watch.Target);
@@ -151,66 +101,10 @@ internal static class ObservableExpressions
     public static ObservableExpression Watch(Delegate watch)
     {
         var target = watch.Target is null ? null : Expression.Constant(watch.Target);
-        return new ObservableExpression(Expression.Call(target, watch.Method), typeof(Unit));
+        return new ObservableExpression(Expression.Call(target, watch.Method), typeof(Nothing));
     }
 
     private static readonly MethodInfo _toImmutable = typeof(ImmutableCollectionsMarshal).GetMethod(
         nameof(ImmutableCollectionsMarshal.AsImmutableArray)
     )!;
-
-    private static MethodCallExpression ToExpression(
-        Type type,
-        ImmutableArray<Expression> expressions
-    )
-    {
-        return Expression.Call(
-            instance: null,
-            _toImmutable,
-            Expression.NewArrayInit(type, expressions)
-        );
-    }
-
-    public static ObservableExpression TryCatchFaultFinally(
-        ObservableExpression bodyObservable,
-        IEnumerable<(
-            Type ExceptionType,
-            ParameterExpression? ExceptionValue,
-            ObservableExpression Result
-        )> catches,
-        ObservableExpression? fault,
-        ObservableExpression? @finally
-    )
-    {
-        var catchFilter = typeof(FilteredExceptionObservable<>)
-            .MakeGenericType(bodyObservable.ElementType)
-            .GetConstructors()[0];
-        var error = Expression.Parameter(typeof(Exception));
-        var filerType = typeof(Func<Exception, bool>);
-        var catchType = TypeLookup.Delegate([typeof(Exception)], bodyObservable.ElementType);
-        return new(
-            Expression.New(
-                typeof(TryCatchFaultFinallyObservable<>)
-                    .MakeGenericType(bodyObservable.ElementType)
-                    .GetConstructors()[0],
-                [
-                    bodyObservable,
-                    .. catches.Select(x =>
-                        Expression.New(
-                            catchFilter,
-                            [
-                                Expression.Lambda(
-                                    filerType,
-                                    Expression.TypeIs(error, x.ExceptionType),
-                                    [error]
-                                ),
-                                Expression.Lambda(catchType, x.Result, [x.ExceptionValue ?? error]),
-                            ]
-                        )
-                    ),
-                    fault?.Value ?? Expression.Constant(null),
-                    @finally?.Value ?? Expression.Constant(null),
-                ]
-            )
-        );
-    }
 }

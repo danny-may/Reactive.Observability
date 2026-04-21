@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
-using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Reactive.Observability.Expressions;
 

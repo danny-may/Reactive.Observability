@@ -70,7 +70,7 @@ public class KeyedDelegateAggregator<TKey, TDelegate>
 
         public void AddAll(Context other)
         {
-            if (other._items is null or { Count: 0 })
+            if (other._items is not { Count: > 0 })
                 return;
             if (_items is null)
                 _items = [.. other._items];
