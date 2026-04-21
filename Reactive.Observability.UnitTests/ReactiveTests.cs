@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Linq;
 using AwesomeAssertions;
 using Newtonsoft.Json.Linq;
-using Reactive.Observability.UnitTests;
 using Xunit;
 
 namespace Reactive.Observability.UnitTests;
@@ -1198,6 +1198,32 @@ public static class ReactiveTests
     }
 
     [Fact]
+    public static void Observe_WorksWithOutParameters()
+    {
+        // arrange
+        var source = new ReactiveLookup<string>();
+        string? value = null;
+        var sut = Reactive.Observe(() => source.TryGetValue(out value) ? value : "Not set");
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription.ShouldBe("Not set").Only();
+        _ = value.Should().Be(null);
+        source.Set("Success");
+        subscription.ShouldBe("Success").Only();
+        _ = value.Should().Be("Success");
+        source.Clear();
+        subscription.ShouldBe("Not set").Only();
+        _ = value.Should().Be(null);
+        subscription.Dispose();
+        source.Set("Fail");
+        subscription.ShouldBeEmpty();
+        _ = value.Should().Be(null);
+    }
+
+    [Fact]
     public static void Observe_WorksWithListInitExpressions()
     {
         // arrange
@@ -1657,6 +1683,33 @@ public static class ReactiveTests
             return unary.Operand;
         }
         return node;
+    }
+}
+
+internal sealed class ReactiveLookup<T> : ReactiveObject
+{
+    private bool _hasValue;
+    private T? _value;
+
+    public void Set(T value)
+    {
+        _value = value;
+        _hasValue = true;
+
+        OnMemberChanged(nameof(TryGetValue));
+    }
+
+    public void Clear()
+    {
+        _hasValue = false;
+        _value = default;
+        OnMemberChanged(nameof(TryGetValue));
+    }
+
+    public bool TryGetValue([MaybeNullWhen(false)] out T value)
+    {
+        value = _value;
+        return _hasValue;
     }
 }
 

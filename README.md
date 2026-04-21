@@ -79,7 +79,8 @@ var src3 = MySource(3);
 Reactive.Observe(() => src1.Value + src2.Value + src3.Value); // This will update when any of the .Values are changed.
 
 // Ternaries / conditionals
-Reactive.Observe(() => ctx.TryGetValue(out var v) ? v : default);
+MyType? v;
+Reactive.Observe(() => ctx.TryGetValue(out v) ? v : default);
 
 // Null coalesce
 Reactive.Observe(() => ctx.Value1 ?? ctx.Value2);
