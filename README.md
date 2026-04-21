@@ -22,7 +22,7 @@ public class Account : ReactiveObject
         set => Set(ref field, value, [nameof(DateOfBirth), nameof(IsOlderThan), nameof(Age)]); 
     }
 
-    public int Age => (DateTimeOffset.UtcNow - DateOfBirth).Days / 365.25
+    public int Age => (DateTimeOffset.UtcNow - DateOfBirth).Days / 365.25;
 
     public int Score;
     public void NotifyScoreHasChanged()
@@ -129,7 +129,7 @@ The intention currently is to support all syntax which can be wrtitten as a lamb
 If you want to watch multiple of the same type of object, it might be easier to create a delegate instead
 
 ```csharp
-Func<Account, IObservable<string?>> watchDisplayName = Reactive.WithInput<Account>().Build(account => account.DisplayName)
+Func<Account, IObservable<string?>> watchDisplayName = Reactive.WithInput<Account>().Build(account => account.DisplayName);
 ```
 
 This way you can skip the overhead of processing the expression tree and quickly watch multiple objects.
