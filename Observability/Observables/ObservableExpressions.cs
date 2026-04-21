@@ -7,6 +7,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Observability.Expressions;
 
 namespace Observability.Observables;
 
@@ -135,7 +136,15 @@ internal static class ObservableExpressions
         var target = watch.Target is null ? null : Expression.Constant(watch.Target);
         return SelectSwitch(
             instance,
-            p => new(Expression.Call(target, watch.Method, [p]), instance.ElementType)
+            p =>
+                new(
+                    Expression.NullPropagate(
+                        p,
+                        p => Expression.Call(target, watch.Method, [p]),
+                        Expression.Constant(DefaultObservable.Get(instance.ElementType)),
+                        instance.Type
+                    )
+                )
         );
     }
 

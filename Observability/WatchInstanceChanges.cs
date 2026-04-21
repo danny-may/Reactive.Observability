@@ -2,4 +2,5 @@
 
 namespace Observability;
 
-public delegate IObservable<TInstance> WatchInstanceChanges<TInstance>(TInstance instance);
+public delegate IObservable<TInstance> WatchInstanceChanges<TInstance>(TInstance instance)
+    where TInstance : notnull;

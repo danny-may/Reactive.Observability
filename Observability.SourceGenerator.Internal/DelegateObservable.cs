@@ -77,6 +77,7 @@ internal static class DelegateObservable
     {
         var sb = new StringBuilder();
 
+        _ = sb.AppendLine("#nullable enable");
         _ = sb.AppendLine("using System;");
         _ = sb.AppendLine("using System.Threading;");
         _ = sb.AppendLine("using System.Collections.Generic;");
@@ -84,7 +85,7 @@ internal static class DelegateObservable
 
         _ = sb.AppendLine("namespace Observability.Observables;");
 
-        for (var i = 1; i <= 16; i++)
+        for (var i = 1; i < 17; i++)
         {
             var typeIds = Enumerable.Range(1, i);
             foreach (var variant in _variants)
@@ -125,7 +126,7 @@ internal static class DelegateObservable
                         private uint _hasValue;
                 {{string.Join("\r\n", typeIds.Select(static i => $$"""
                         private const uint _t{{i}}Flag = 0x{{1U << (i - 1):X4}}u;
-                        private T{{i}} _t{{i}};
+                        private T{{i}}? _t{{i}};
                         private readonly IDisposable _t{{i}}Subscription;
                 """))}}
 

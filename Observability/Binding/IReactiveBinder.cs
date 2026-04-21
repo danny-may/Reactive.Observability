@@ -3,13 +3,15 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Observability;
+namespace Observability.Binding;
 
 public interface IReactiveBinder
 {
-    WatchInstanceChanges<TInstance>? WatchInstance<TInstance>(MemberInfo instanceMember);
+    WatchInstanceChanges<TInstance>? WatchInstance<TInstance>(MemberInfo instanceMember)
+        where TInstance : notnull;
 
-    WatchExtensionChanges<TInstance>? WatchExtension<TInstance>(MethodInfo extensionMethod);
+    WatchExtensionChanges<TInstance>? WatchExtension<TInstance>(MethodInfo extensionMethod)
+        where TInstance : notnull;
 
     WatchStaticChanges? WatchStatic(MemberInfo staticMember);
 
@@ -64,6 +66,7 @@ file abstract class BinderRouter
     private BinderRouter() { }
 
     private sealed class Impl<TInstance> : BinderRouter
+        where TInstance : notnull
     {
         public override Delegate? WatchInstance(IReactiveBinder binder, MemberInfo member)
         {

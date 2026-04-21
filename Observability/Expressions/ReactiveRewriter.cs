@@ -9,6 +9,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Observability.Binding;
 using Observability.Observables;
 
 namespace Observability.Expressions;
@@ -254,13 +255,13 @@ internal sealed class ReactiveRewriter
         Result nonNull;
         if (node.Conversion is null)
         {
-            nonNull = new(Expression.NonNull(cache), []);
+            nonNull = new(Expression.NonNullable(cache), []);
         }
         else
         {
             var convertArg = node.Conversion.Parameters[0].Type.IsAssignableFrom(cache.Type)
                 ? cache
-                : Expression.NonNull(cache);
+                : Expression.NonNullable(cache);
             var convert = mapping.Get(node.Conversion);
             nonNull = new(Expression.Invoke(convert.Expression, convertArg), convert.Dependencies);
         }

@@ -13,5 +13,6 @@ internal sealed class SourceGenerator : IIncrementalGenerator
     private void EmitEach(IncrementalGeneratorPostInitializationContext context)
     {
         DelegateObservable.Emit(context);
+        ReactiveBuilders.Emit(context);
     }
 }

@@ -6,21 +6,19 @@ namespace Observability.Observables;
 
 public sealed class PropertyChangedObservable<T>(T source, string? propertyName)
     : WatchChangeObservable<T>(source)
+    where T : INotifyPropertyChanged
 {
     protected override IDisposable? Subscribe(T source, Action onChange)
     {
-        if (source is not INotifyPropertyChanged notify)
-            return null;
-
         if (propertyName is null)
         {
-            notify.PropertyChanged += OnAnyPropertyChanged;
-            return Disposable.Create(() => notify.PropertyChanged -= OnAnyPropertyChanged);
+            source.PropertyChanged += OnAnyPropertyChanged;
+            return Disposable.Create(() => source.PropertyChanged -= OnAnyPropertyChanged);
             void OnAnyPropertyChanged(object? sender, PropertyChangedEventArgs e) => onChange();
         }
 
-        notify.PropertyChanged += OnPropertyChanged;
-        return Disposable.Create(() => notify.PropertyChanged -= OnPropertyChanged);
+        source.PropertyChanged += OnPropertyChanged;
+        return Disposable.Create(() => source.PropertyChanged -= OnPropertyChanged);
         void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (

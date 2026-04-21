@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Observability.Expressions;
 
@@ -19,116 +19,85 @@ internal sealed class NullSafeTransform : ExpressionVisitor
 
     protected override Expression VisitMember(MemberExpression node)
     {
-        if (node.Expression is null)
-            return base.VisitMember(node);
-
-        return InjectNullChecks(node);
+        var root = FindCallChain(node, out var chain);
+        if (root != node)
+            root = Visit(root);
+        return Expression.NullPropagate(root, chain, Expression.Default(node.Type), node.Type);
     }
 
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
-        if (node.Object is not null)
-        {
-            node = node.Update(node.Object, Visit(node.Arguments));
-            return InjectNullChecks(node);
-        }
-
-        if (Attribute.IsDefined(node.Method, typeof(ExtensionAttribute)))
-        {
-            node = node.Update(
-                node.Object,
-                [node.Arguments[0], .. Visit(node.Arguments.Slice(1..))]
-            );
-            return InjectNullChecks(node);
-        }
-
-        return base.VisitMethodCall(node);
+        var root = FindCallChain(node, out var chain);
+        if (root != node)
+            root = Visit(root);
+        return Expression.NullPropagate(root, chain, Expression.Default(node.Type), node.Type);
     }
 
     protected override Expression VisitInvocation(InvocationExpression node)
     {
-        node = node.Update(node.Expression, Visit(node.Arguments));
-        return InjectNullChecks(node);
+        var root = FindCallChain(node, out var chain);
+        if (root != node)
+            root = Visit(root);
+        return Expression.NullPropagate(root, chain, Expression.Default(node.Type), node.Type);
     }
 
     protected override Expression VisitIndex(IndexExpression node)
     {
-        if (node.Object is null)
-            return base.VisitIndex(node);
-
-        node = node.Update(node.Object, Visit(node.Arguments));
-        return InjectNullChecks(node);
+        var root = FindCallChain(node, out var chain);
+        if (root != node)
+            root = Visit(root);
+        return Expression.NullPropagate(root, chain, Expression.Default(node.Type), node.Type);
     }
 
     protected override Expression VisitUnary(UnaryExpression node)
     {
-        if (node.NodeType != ExpressionType.ArrayLength)
-            return base.VisitUnary(node);
-
-        return InjectNullChecks(node);
+        var root = FindCallChain(node, out var chain);
+        if (root != node)
+            root = Visit(root);
+        return Expression.NullPropagate(root, chain, Expression.Default(node.Type), node.Type);
     }
 
-    private static Expression InjectNullChecks(Expression node)
+    private static Expression FindCallChain(
+        Expression node,
+        out ReadOnlySpan<Func<Expression, Expression>> chain
+    )
     {
-        var nullables = FindPossibleNullRefs(node).ToList();
-        if (nullables.Count == 0)
-            return node;
-
-        var variables = nullables.Map(static x => Expression.Variable(x.Type));
-
-        var @default = Expression.Default(node.Type);
-
-        var replacements = new (Expression Nullable, ParameterExpression NotNull)[nullables.Count];
-        for (var i = 0; i < replacements.Length; i++)
-            replacements[i] = (nullables[i], variables[i]);
-
-        var j = 0;
-        var replacer = new ExpressionReplacer(x =>
-        {
-            if (j >= replacements.Length)
-                return x;
-            if (replacements[j].Nullable == x)
-                return replacements[j].NotNull;
-            return x;
-        });
-
-        var body = replacer.Visit(node);
-
-        foreach (var (nullable, variable) in replacements)
-        {
-            j++;
-            body = Expression.Condition(
-                Expression.IsNull(Expression.Assign(variable, replacer.Visit(nullable))),
-                @default,
-                body
-            );
-        }
-
-        return Expression.Block(node.Type, variables, body);
-    }
-
-    private static IEnumerable<Expression> FindPossibleNullRefs(Expression? node)
-    {
+        var funcs = new List<Func<Expression, Expression>>();
         while (true)
         {
-            node = node switch
+            switch (node)
             {
-                MemberExpression m => m.Expression,
-                IndexExpression i => i.Object,
-                MethodCallExpression { Object: null } m
-                    when Attribute.IsDefined(m.Method, typeof(ExtensionAttribute)) =>
-                    m.Arguments.FirstOrDefault(),
-                MethodCallExpression m => m.Object,
-                UnaryExpression { NodeType: ExpressionType.ArrayLength } u => u.Operand,
-                InvocationExpression i => i.Expression,
-                _ => null,
-            };
+                case MemberExpression { Expression: not null } m:
+                    funcs.Add(m.Update);
+                    node = m.Expression;
+                    break;
+                case IndexExpression { Object: not null } i:
+                    funcs.Add(x => i.Update(x, i.Arguments));
+                    node = i.Object;
+                    break;
+                case MethodCallExpression { Object: not null } m:
+                    funcs.Add(x => m.Update(x, m.Arguments));
+                    node = m.Object;
+                    break;
+                case MethodCallExpression { Object: null, Arguments: [not null, ..] } m
+                    when Attribute.IsDefined(m.Method, typeof(ExtensionAttribute)):
+                    funcs.Add(x => m.Update(@object: null, [x, .. m.Arguments.Slice(1..)]));
+                    node = m.Arguments[0];
+                    break;
+                case UnaryExpression { Operand: not null, NodeType: ExpressionType.ArrayLength } u:
+                    funcs.Add(u.Update);
+                    node = u.Operand;
+                    break;
 
-            if (node is null)
-                break;
-
-            if (IsNullable(node))
-                yield return node;
+                case InvocationExpression { Expression: not null } i:
+                    funcs.Add(x => i.Update(x, i.Arguments));
+                    node = i.Expression;
+                    break;
+                default:
+                    funcs.Reverse();
+                    chain = CollectionsMarshal.AsSpan(funcs);
+                    return node;
+            }
         }
     }
 

@@ -1409,6 +1409,78 @@ public static class ReactiveTests
     }
 
     [Fact]
+    public static void Observe_ShouldReturnTheCurrentValueForANullableStructUsingValueToString()
+    {
+        // arrange
+        var source = new TestReactive<Guid?> { Value = Guid.Empty };
+        var sut = Reactive.Observe(() => source.Value.Value.ToString());
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription.ShouldBe("00000000-0000-0000-0000-000000000000").Only();
+        source.Value = null;
+        subscription.ShouldBe(null).Only();
+        subscription.Dispose();
+        subscription.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public static void Observe_ShouldReturnTheCurrentValueForANullableStructUsingValue()
+    {
+        // arrange
+        var source = new TestReactive<Guid?> { Value = Guid.Empty };
+        var sut = Reactive.Observe(() => source.Value.Value);
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription.ShouldBe(Guid.Empty).Only();
+        source.Value = null;
+        subscription.ShouldBe(Guid.Empty).Only();
+        subscription.Dispose();
+        subscription.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public static void Observe_ShouldReturnTheCurrentValueForANullableStructUsingHasValue()
+    {
+        // arrange
+        var source = new TestReactive<Guid?> { Value = Guid.Empty };
+        var sut = Reactive.Observe(() => source.Value.HasValue.ToString());
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription.ShouldBe("True").Only();
+        source.Value = null;
+        subscription.ShouldBe("False").Only();
+        subscription.Dispose();
+        subscription.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public static void Observe_ShouldReturnTheCurrentValueForANullableStructUsingGetValueOrDefault()
+    {
+        // arrange
+        var source = new TestReactive<Guid?> { Value = Guid.Empty };
+        var sut = Reactive.Observe(() => source.Value.GetValueOrDefault().ToString());
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription.ShouldBe("00000000-0000-0000-0000-000000000000").Only();
+        source.Value = null;
+        subscription.ShouldBe("00000000-0000-0000-0000-000000000000").Only();
+        subscription.Dispose();
+        subscription.ShouldBeEmpty();
+    }
+
+    [Fact]
     public static void Observe_ShouldReturnTheCurrentValueForANullableNestedReactiveObject()
     {
         // arrange
@@ -1594,7 +1666,7 @@ internal sealed class ComplexResult
     public int V1 { get; set; }
     public int V2 { get; set; }
     public ComplexInnerResult Inner { get; } = new();
-    public List<int> All { get; } = new();
+    public List<int> All { get; } = [];
 }
 
 internal sealed class ComplexInnerResult

@@ -2,13 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Observability.Expressions;
 
-namespace Observability;
+namespace Observability.Binding;
 
 public sealed class ReactiveProvider(IReactiveBinder binder)
 {
@@ -16,42 +15,27 @@ public sealed class ReactiveProvider(IReactiveBinder binder)
         ReferenceEqualityComparer.Instance
     );
 
-    public IObservable<TResult?> Observe<TResult>(Expression<Func<TResult>> expression)
-    {
-        expression = ExpressionNormalizer.Normalize(expression, out var context, out var constants);
-        var binderFn = _binders.GetOrAdd(expression.Body, CompileParameterless, context);
-        return Unsafe.As<IObservable<TResult>>(binderFn.DynamicInvoke(constants)!);
-    }
-
-    public IObservable<TResult> Observe<TSource, TResult>(
-        IObservable<TSource> source,
-        Expression<Func<TSource, TResult>> expression
-    )
+    /// <summary>
+    /// Converts the expression tree into a delegate which can be called with the same arguments.
+    /// The return value will be an <![CDATA[IObservable<TResult?>]]> instead of a TResult.
+    /// e.g. an <![CDATA[Expression<Func<string>>]]> will return a <![CDATA[Func<IObservable<string?>>]]>
+    /// </summary>
+    /// <typeparam name="TDelegate"></typeparam>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public Delegate Build<TDelegate>(Expression<TDelegate> expression)
+        where TDelegate : Delegate
     {
         expression = ExpressionNormalizer.Normalize(expression, out var context, out var constants);
         var binderFn = _binders.GetOrAdd(
             expression.Body,
-            CompileParameterized,
+            Compile,
             (context, expression.Parameters)
         );
-        var selector = Unsafe.As<Func<TSource, IObservable<TResult>>>(
-            binderFn.DynamicInvoke(constants)!
-        );
-        return source.Select(selector).Switch();
+        return Unsafe.As<Delegate>(binderFn.DynamicInvoke(constants)!);
     }
 
-    private Delegate CompileParameterless(Expression body, ParameterExpression context)
-    {
-        var observable = ReactiveRewriter.Rewrite(body, binder, [context]);
-        var lambda = Expression.Lambda(
-            TypeLookup.Delegate([context.Type], observable.Type),
-            observable,
-            [context]
-        );
-        return lambda.Compile();
-    }
-
-    private Delegate CompileParameterized(
+    private Delegate Compile(
         Expression body,
         (ParameterExpression, ReadOnlyCollection<ParameterExpression>) context
     )
