@@ -715,6 +715,114 @@ public static partial class ReactiveTests
     }
 
     [Fact]
+    public static void Observe_WorksWithStructCoalesceExpressions()
+    {
+        // arrange
+        var a = new ReactiveProperty<int?>(null);
+        var b = new ReactiveProperty<int>(123);
+        var counter = new Counter();
+        var sut = Reactive.Observe(() => a.Value ?? counter.Increment(b.Value));
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription.ShouldBe(123).Only();
+        _ = counter.Count.Should().Be(1);
+        b.Value = 456;
+        subscription.ShouldBe(456).Only();
+        _ = counter.Count.Should().Be(2);
+        a.Value = 987;
+        subscription.ShouldBe(987).Only();
+        _ = counter.Count.Should().Be(2);
+        b.Value = 0;
+        subscription.ShouldBeEmpty();
+        _ = counter.Count.Should().Be(2);
+        subscription.Dispose();
+        subscription.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public static void Observe_WorksWithNullableStructCoalesceExpressions()
+    {
+        // arrange
+        var a = new ReactiveProperty<int?>(null);
+        var b = new ReactiveProperty<int?>(null);
+        var counter = new Counter();
+        var sut = Reactive.Observe(() => a.Value ?? counter.Increment(b.Value));
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription.ShouldBe(null).Only();
+        _ = counter.Count.Should().Be(1);
+        b.Value = 456;
+        subscription.ShouldBe(456).Only();
+        _ = counter.Count.Should().Be(2);
+        a.Value = 987;
+        subscription.ShouldBe(987).Only();
+        _ = counter.Count.Should().Be(2);
+        b.Value = null;
+        subscription.ShouldBeEmpty();
+        _ = counter.Count.Should().Be(2);
+        subscription.Dispose();
+        subscription.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public static void Observe_WorksWithInlineLambdaExpressions()
+    {
+        // arrange
+        var a = new ReactiveProperty<string>("abc");
+        var counter = new Counter();
+        var sut = Reactive.Observe(() =>
+            counter.Increment(
+                (string text) => text.Contains(a.Value, StringComparison.OrdinalIgnoreCase)
+            )
+        );
+
+        // act
+        using var subscription = sut.Test();
+
+        // assert
+        subscription
+            .ShouldPass(filter =>
+            {
+                _ = filter!("abc").Should().BeTrue();
+                _ = filter("this is an abc test").Should().BeTrue();
+                _ = filter("this shouldnt match").Should().BeFalse();
+            })
+            .Only();
+        _ = counter.Count.Should().Be(1);
+        a.Value = "this";
+        subscription
+            .ShouldPass(filter =>
+            {
+                _ = filter!("abc").Should().BeFalse();
+                _ = filter("this is an abc test").Should().BeTrue();
+                _ = filter("this shouldnt match").Should().BeTrue();
+            })
+            .Only();
+        _ = counter.Count.Should().Be(2);
+        a.Value = "match";
+        subscription
+            .ShouldPass(filter =>
+            {
+                _ = filter!("abc").Should().BeFalse();
+                _ = filter("this is an abc test").Should().BeFalse();
+                _ = filter("this shouldnt match").Should().BeTrue();
+            })
+            .Only();
+        _ = counter.Count.Should().Be(3);
+        a.Value = "match";
+        subscription.ShouldBeEmpty();
+        _ = counter.Count.Should().Be(3);
+        subscription.Dispose();
+        subscription.ShouldBeEmpty();
+    }
+
+    [Fact]
     public static void Observe_WorksWithCoalesceNullableExpressions()
     {
         // arrange

@@ -40,6 +40,11 @@ internal sealed class ObservableTest<T> : IDisposable
         return _assertion.ThenBe(value);
     }
 
+    public Assertion ShouldPass(Action<T> assertion)
+    {
+        return _assertion.ThenPass(assertion);
+    }
+
     public Assertion ShouldBe(T value, out T actual)
     {
         return _assertion.ThenBe(value, out actual);
@@ -78,6 +83,15 @@ internal sealed class ObservableTest<T> : IDisposable
                     op => op.ComparingByMembers<Notification<T>>()
                 );
             actual = notification.Value;
+            return this;
+        }
+
+        public Assertion ThenPass(Action<T> assertion)
+        {
+            _ = messages.TryDequeue(out var notification).Should().BeTrue();
+            _ = notification.Should().NotBeNull();
+            _ = notification.HasValue.Should().BeTrue();
+            assertion(notification.Value);
             return this;
         }
 

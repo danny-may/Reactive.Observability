@@ -251,7 +251,9 @@ internal sealed class ReactiveRewriter
         Result nonNull;
         if (node.Conversion is null)
         {
-            nonNull = new(Expression.NonNullable(cache), []);
+            nonNull = Nullable.GetUnderlyingType(param.Type) is null
+                ? new(Expression.NonNullable(cache), [])
+                : new(cache, []);
         }
         else
         {
